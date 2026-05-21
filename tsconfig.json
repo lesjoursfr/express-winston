@@ -1,19 +1,14 @@
 {
-    "compilerOptions": {
-        "module": "commonjs",
-        "lib": [
-            "es6"
-        ],
-        "noImplicitAny": true,
-        "noImplicitThis": true,
-        "strictNullChecks": true,
-        "strictFunctionTypes": true,
-        "types": [],
-        "noEmit": true,
-        "forceConsistentCasingInFileNames": true
-    },
-    "files": [
-        "index.d.ts",
-        "test/express-winston-tests.ts"
-    ]
+	"extends": "./node_modules/@tsconfig/node22/tsconfig.json",
+	"compilerOptions": {
+		/* Visit https://aka.ms/tsconfig.json to read more about this file */
+		"outDir": "lib",
+		"rootDir": "src",
+		"types": ["node"],
+		"declaration": true,
+		"declarationDir": "lib",
+		"resolveJsonModule": true
+	},
+	"include": ["src/**/*"],
+	"exclude": ["node_modules", "**/*.spec.ts"]
 }

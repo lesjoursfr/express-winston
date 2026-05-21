@@ -1,0 +1,17 @@
+.github
+.vscode
+.yarn
+node_modules
+src
+.editorconfig
+.eslintignore
+eslint.config.js
+.gitattributes
+.gitignore
+.mocharc.json
+.prettierignore
+prettier.config.js
+.whitesource
+.yarnrc.yml
+tsconfig.json
+yarn.lock

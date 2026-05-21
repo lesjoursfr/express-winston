@@ -1,0 +1,39 @@
+name: Publish Package to GitHub Packages
+
+on:
+  release:
+    types: [created]
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    name: Publish Package to GitHub Packages
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - run: corepack enable
+      - name: Use Node.js 26
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: "26.1.0"
+          package-manager-cache: false
+          registry-url: "https://npm.pkg.github.com"
+          scope: "@lesjoursfr"
+
+      - name: Install
+        run: |
+          yarn config set enableImmutableInstalls false
+          yarn install
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - run: npm run build
+
+      - run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

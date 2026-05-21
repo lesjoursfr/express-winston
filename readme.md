@@ -1,24 +1,23 @@
-# express-winston
-[![Monthly Downloads](https://img.shields.io/npm/dm/express-winston.svg)](https://www.npmjs.com/package/express-winston) [![Build Status](https://secure.travis-ci.org/bithavoc/express-winston.png)](http://travis-ci.org/bithavoc/express-winston)
+[![npm version](https://badge.fury.io/js/@lesjoursfr%2Fexpress-winston.svg)](https://badge.fury.io/js/@lesjoursfr%2Fexpress-winston)
+[![QC Checks](https://github.com/lesjoursfr/express-winston/actions/workflows/quality-control.yml/badge.svg)](https://github.com/lesjoursfr/express-winston/actions/workflows/quality-control.yml)
 
-> [winston](https://github.com/winstonjs/winston) middleware for express.js
+# @lesjoursfr/express-winston
 
-[Changelog](CHANGELOG.md)
-
-[CALL FOR MAINTAINERS](https://github.com/bithavoc/express-winston/issues/192)
+[winston](https://github.com/winstonjs/winston) middleware for express.js
 
 ## Installation
 
-    npm install winston express-winston
-
-(supports node >= 6)
+```bash
+npm install @lesjoursfr/express-winston
+```
 
 ## #BLM and 5.x breaking changes
 
 The maintainers of this project no longer feel comfortable with the following terms:
-* whitelist
-* blacklist
-* master
+
+- whitelist
+- blacklist
+- master
 
 Therefore, exposed configuration options, types in this library using those terms are due to be removed in the upcoming 5.x series,
 including the ~~master~~ branch, you should update your apps and your code accordingly.
@@ -28,7 +27,7 @@ You can track the progress of these changes in [#247](https://github.com/bithavo
 
 ## Usage
 
-express-winston provides middlewares for request and error logging of your express.js application.  It uses 'whitelists' to select properties from the request and (new in 0.2.x) response objects.
+express-winston provides middlewares for request and error logging of your express.js application. It uses 'whitelists' to select properties from the request and (new in 0.2.x) response objects.
 
 To make use of express-winston, you need to add the following to your application:
 
@@ -56,30 +55,32 @@ var winston = require('winston'),
 
 Use `expressWinston.logger(options)` to create a middleware to log your HTTP requests.
 
-``` js
-    var router = require('./my-express-router');
+```js
+var router = require("./my-express-router");
 
-    app.use(expressWinston.logger({
-      transports: [
-        new winston.transports.Console()
-      ],
-      format: winston.format.combine(
-        winston.format.colorize(),
-        winston.format.json()
-      ),
-      meta: true, // optional: control whether you want to log the meta data about the request (default to true)
-      msg: "HTTP {{req.method}} {{req.url}}", // optional: customize the default logging message. E.g. "{{res.statusCode}} {{req.method}} {{res.responseTime}}ms {{req.url}}"
-      expressFormat: true, // Use the default Express/morgan request formatting. Enabling this will override any msg if true. Will only output colors with colorize set to true
-      colorize: false, // Color the text and status code, using the Express/morgan color palette (text: gray, status: default green, 3XX cyan, 4XX yellow, 5XX red).
-      ignoreRoute: function (req, res) { return false; } // optional: allows to skip some log messages based on request and/or response
-    }));
+app.use(
+	expressWinston.logger({
+		transports: [new winston.transports.Console()],
+		format: winston.format.combine(
+			winston.format.colorize(),
+			winston.format.json()
+		),
+		meta: true, // optional: control whether you want to log the meta data about the request (default to true)
+		msg: "HTTP {{req.method}} {{req.url}}", // optional: customize the default logging message. E.g. "{{res.statusCode}} {{req.method}} {{res.responseTime}}ms {{req.url}}"
+		expressFormat: true, // Use the default Express/morgan request formatting. Enabling this will override any msg if true. Will only output colors with colorize set to true
+		colorize: false, // Color the text and status code, using the Express/morgan color palette (text: gray, status: default green, 3XX cyan, 4XX yellow, 5XX red).
+		ignoreRoute: function (req, res) {
+			return false;
+		}, // optional: allows to skip some log messages based on request and/or response
+	})
+);
 
-    app.use(router); // notice how the router goes after the logger.
+app.use(router); // notice how the router goes after the logger.
 ```
 
 #### Options
 
-``` js
+```js
     transports: [<WinstonTransport>], // list of all winston transports instances to use.
     format: [<logform.Format>], // formatting desired for log output.
     winstonInstance: <WinstonLogger>, // a winston logger instance. If this is provided the transports and formats options are ignored.
@@ -110,26 +111,26 @@ Use `expressWinston.logger(options)` to create a middleware to log your HTTP req
 
 Use `expressWinston.errorLogger(options)` to create a middleware that log the errors of the pipeline.
 
-``` js
-    var router = require('./my-express-router');
+```js
+var router = require("./my-express-router");
 
-    app.use(router); // notice how the router goes first.
-    app.use(expressWinston.errorLogger({
-      transports: [
-        new winston.transports.Console()
-      ],
-      format: winston.format.combine(
-        winston.format.colorize(),
-        winston.format.json()
-      )
-    }));
+app.use(router); // notice how the router goes first.
+app.use(
+	expressWinston.errorLogger({
+		transports: [new winston.transports.Console()],
+		format: winston.format.combine(
+			winston.format.colorize(),
+			winston.format.json()
+		),
+	})
+);
 ```
 
-The logger needs to be added AFTER the express router (`app.router`) and BEFORE any of your custom error handlers (`express.handler`). Since express-winston will just log the errors and not __handle__ them, you can still use your custom error handler like `express.handler`, just be sure to put the logger before any of your handlers.
+The logger needs to be added AFTER the express router (`app.router`) and BEFORE any of your custom error handlers (`express.handler`). Since express-winston will just log the errors and not **handle** them, you can still use your custom error handler like `express.handler`, just be sure to put the logger before any of your handlers.
 
 #### Options
 
-``` js
+```js
     transports: [<WinstonTransport>], // list of all winston transports instances to use.
     format: [<logform.Format>], // formatting desired for log output
     winstonInstance: <WinstonLogger>, // a winston logger instance. If this is provided the transports and formats options are ignored.
@@ -137,7 +138,7 @@ The logger needs to be added AFTER the express router (`app.router`) and BEFORE 
     baseMeta: Object, // default meta data to be added to log, this will be merged with the error data.
     meta: Boolean, // control whether you want to log the meta data about the request (default to true).
     metaField: String, // if defined, the meta data will be added in this field instead of the meta root object. Defaults to 'meta'. Set to `null` to store metadata at the root of the log entry.
-    requestField: [String] // the property of the metadata to store the request under (default 'req'). Set to null to exclude request from metadata    
+    requestField: [String] // the property of the metadata to store the request under (default 'req'). Set to null to exclude request from metadata
     responseField: [String] // the property of the metadata to store the response under (default 'res'). If set to the same as 'requestField', filtered response and request properties will be merged. Set to null to exclude request from metadata
     requestFilter: function (req, propName) { return req[propName]; } // A function to filter/return request values, defaults to returning all values allowed by whitelist. If the function returns undefined, the key/value will not be included in the meta.
     requestWhitelist: [String] // Array of request properties to log. Overrides global requestWhitelist for this instance
@@ -155,78 +156,88 @@ Alternatively, if you're using a winston logger instance elsewhere and have alre
 
 #### `metaField` option
 
-In versions of `express-winston` prior to 4.0.0, this field functioned differently.  
+In versions of `express-winston` prior to 4.0.0, this field functioned differently.
 
-Previously the log entry would always have a "meta" field which would be set to the metadata of the request/error.  
-If `metaField` was set, this information would be stored as an object with the given property on the "meta" object of 
-the log entry.  This prevented the use case where the metadata should be located at the root of the log entry.
+Previously the log entry would always have a "meta" field which would be set to the metadata of the request/error.
+If `metaField` was set, this information would be stored as an object with the given property on the "meta" object of
+the log entry. This prevented the use case where the metadata should be located at the root of the log entry.
 
-In this version, `metaField` defaults to "meta" which maintains the prior versions behavior of storing the metadata at 
-a "meta" property of the log entry.  
+In this version, `metaField` defaults to "meta" which maintains the prior versions behavior of storing the metadata at
+a "meta" property of the log entry.
 
 Explicitly setting the `metaField` to `null` or "null" causes the metadata to be stored at the root of the log entry.
 
 The `metaField` option now also supports dot separated and array values to store the metadata at a nested location in the log entry.
 
-<h3>Upgrade Note: For those upgrading from a version of `express-winston` prior to 4.0.0 that use the `metaField` property, to keep the same behavior, prepend `meta.` to your current `metaField` configuration. (i.e. 'foo' would become 'meta.foo')</h3> 
+<h3>Upgrade Note: For those upgrading from a version of `express-winston` prior to 4.0.0 that use the `metaField` property, to keep the same behavior, prepend `meta.` to your current `metaField` configuration. (i.e. 'foo' would become 'meta.foo')</h3>
 
 ## Examples
 
-``` js
-    var express = require('express');
-    var expressWinston = require('express-winston');
-    var winston = require('winston'); // for transports.Console
-    var app = module.exports = express();
+```js
+var express = require("express");
+var expressWinston = require("express-winston");
+var winston = require("winston"); // for transports.Console
+var app = (module.exports = express());
 
-    app.use(express.bodyParser());
-    app.use(express.methodOverride());
+app.use(express.bodyParser());
+app.use(express.methodOverride());
 
-    // Let's make our express `Router` first.
-    var router = express.Router();
-    router.get('/error', function(req, res, next) {
-      // here we cause an error in the pipeline so we see express-winston in action.
-      return next(new Error("This is an error and it should be logged to the console"));
-    });
+// Let's make our express `Router` first.
+var router = express.Router();
+router.get("/error", function (req, res, next) {
+	// here we cause an error in the pipeline so we see express-winston in action.
+	return next(
+		new Error("This is an error and it should be logged to the console")
+	);
+});
 
-    router.get('/', function(req, res, next) {
-      res.write('This is a normal request, it should be logged to the console too');
-      res.end();
-    });
+router.get("/", function (req, res, next) {
+	res.write(
+		"This is a normal request, it should be logged to the console too"
+	);
+	res.end();
+});
 
-    // express-winston logger makes sense BEFORE the router
-    app.use(expressWinston.logger({
-      transports: [
-        new winston.transports.Console()
-      ],
-      format: winston.format.combine(
-        winston.format.colorize(),
-        winston.format.json()
-      )
-    }));
+// express-winston logger makes sense BEFORE the router
+app.use(
+	expressWinston.logger({
+		transports: [new winston.transports.Console()],
+		format: winston.format.combine(
+			winston.format.colorize(),
+			winston.format.json()
+		),
+	})
+);
 
-    // Now we can tell the app to use our routing code:
-    app.use(router);
+// Now we can tell the app to use our routing code:
+app.use(router);
 
-    // express-winston errorLogger makes sense AFTER the router.
-    app.use(expressWinston.errorLogger({
-      transports: [
-        new winston.transports.Console()
-      ],
-      format: winston.format.combine(
-        winston.format.colorize(),
-        winston.format.json()
-      )
-    }));
+// express-winston errorLogger makes sense AFTER the router.
+app.use(
+	expressWinston.errorLogger({
+		transports: [new winston.transports.Console()],
+		format: winston.format.combine(
+			winston.format.colorize(),
+			winston.format.json()
+		),
+	})
+);
 
-    // Optionally you can include your custom error handler after the logging.
-    app.use(express.errorLogger({
-      dumpExceptions: true,
-      showStack: true
-    }));
+// Optionally you can include your custom error handler after the logging.
+app.use(
+	express.errorLogger({
+		dumpExceptions: true,
+		showStack: true,
+	})
+);
 
-    app.listen(3000, function(){
-      console.log("express-winston demo listening on port %d in %s mode", this.address().port, app.settings.env);
-    });
+app.listen(3000, function () {
+	console.log(
+		"express-winston demo listening on port %d in %s mode",
+		this.address().port,
+		app.settings.env
+	);
+});
 ```
 
 Browse `/` to see a regular HTTP logging like this:
@@ -339,60 +350,67 @@ If using this library with `@google-cloud/logging-winston`, use the following co
 See https://cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry
 
 ```javascript
-var express = require('express');
-var expressWinston = require('express-winston');
-var LoggingWinston = require('@google-cloud/logging-winston').LoggingWinston;
+var express = require("express");
+var expressWinston = require("express-winston");
+var LoggingWinston = require("@google-cloud/logging-winston").LoggingWinston;
 
-const app = express()
+const app = express();
 
-app.use(expressWinston.logger({
-    transports: [new LoggingWinston({})],
-    metaField: null, //this causes the metadata to be stored at the root of the log entry
-    responseField: null, // this prevents the response from being included in the metadata (including body and status code)
-    requestWhitelist: ['headers', 'query'],  //these are not included in the standard StackDriver httpRequest
-    responseWhitelist: ['body'], // this populates the `res.body` so we can get the response size (not required)
-    dynamicMeta:  (req, res) => {
-      const httpRequest = {}
-      const meta = {}
-      if (req) {
-        meta.httpRequest = httpRequest
-        httpRequest.requestMethod = req.method
-        httpRequest.requestUrl = `${req.protocol}://${req.get('host')}${req.originalUrl}`
-        httpRequest.protocol = `HTTP/${req.httpVersion}`
-        // httpRequest.remoteIp = req.ip // this includes both ipv6 and ipv4 addresses separated by ':'
-        httpRequest.remoteIp = req.ip.indexOf(':') >= 0 ? req.ip.substring(req.ip.lastIndexOf(':') + 1) : req.ip   // just ipv4
-        httpRequest.requestSize = req.socket.bytesRead
-        httpRequest.userAgent = req.get('User-Agent')
-        httpRequest.referrer = req.get('Referrer')
-      }
-    
-      if (res) {
-        meta.httpRequest = httpRequest
-        httpRequest.status = res.statusCode
-        httpRequest.latency = {
-          seconds: Math.floor(res.responseTime / 1000),
-          nanos: ( res.responseTime % 1000 ) * 1000000
-        }
-        if (res.body) {
-          if (typeof res.body === 'object') {
-            httpRequest.responseSize = JSON.stringify(res.body).length
-          } else if (typeof res.body === 'string') {
-            httpRequest.responseSize = res.body.length
-          }
-        }
-      }
-      return meta
-    }
-}));
+app.use(
+	expressWinston.logger({
+		transports: [new LoggingWinston({})],
+		metaField: null, //this causes the metadata to be stored at the root of the log entry
+		responseField: null, // this prevents the response from being included in the metadata (including body and status code)
+		requestWhitelist: ["headers", "query"], //these are not included in the standard StackDriver httpRequest
+		responseWhitelist: ["body"], // this populates the `res.body` so we can get the response size (not required)
+		dynamicMeta: (req, res) => {
+			const httpRequest = {};
+			const meta = {};
+			if (req) {
+				meta.httpRequest = httpRequest;
+				httpRequest.requestMethod = req.method;
+				httpRequest.requestUrl = `${req.protocol}://${req.get("host")}${req.originalUrl}`;
+				httpRequest.protocol = `HTTP/${req.httpVersion}`;
+				// httpRequest.remoteIp = req.ip // this includes both ipv6 and ipv4 addresses separated by ':'
+				httpRequest.remoteIp =
+					req.ip.indexOf(":") >= 0
+						? req.ip.substring(req.ip.lastIndexOf(":") + 1)
+						: req.ip; // just ipv4
+				httpRequest.requestSize = req.socket.bytesRead;
+				httpRequest.userAgent = req.get("User-Agent");
+				httpRequest.referrer = req.get("Referrer");
+			}
+
+			if (res) {
+				meta.httpRequest = httpRequest;
+				httpRequest.status = res.statusCode;
+				httpRequest.latency = {
+					seconds: Math.floor(res.responseTime / 1000),
+					nanos: (res.responseTime % 1000) * 1000000,
+				};
+				if (res.body) {
+					if (typeof res.body === "object") {
+						httpRequest.responseSize = JSON.stringify(
+							res.body
+						).length;
+					} else if (typeof res.body === "string") {
+						httpRequest.responseSize = res.body.length;
+					}
+				}
+			}
+			return meta;
+		},
+	})
+);
 ```
 
 ## Global Whitelists and Blacklists
 
 Express-winston exposes three whitelists that control which properties of the `request`, `body`, and `response` are logged:
 
-* `requestWhitelist`
-* `bodyWhitelist`, `bodyBlacklist`
-* `responseWhitelist`
+- `requestWhitelist`
+- `bodyWhitelist`, `bodyBlacklist`
+- `responseWhitelist`
 
 For example, `requestWhitelist` defaults to:
 
@@ -415,7 +433,7 @@ Note that you can log the whole request and/or response body:
 
     expressWinston.requestWhitelist.push('body');
     expressWinston.responseWhitelist.push('body');
-    
+
 ### Nested Whitelists
 
 `requestWhitelist` and `responseWhitelist` also support nested whitelist values, allowing access to parts of an object.
@@ -423,7 +441,7 @@ Note that you can log the whole request and/or response body:
 For example, using the following during logger setup:
 
     expressWinston.responseWhitelist.push('body.important.value');
-    
+
 A response that looks like this :
 
     {
@@ -439,7 +457,7 @@ A response that looks like this :
             value: 3
         }
     }
-    
+
 Would only log the following value :
 
     {
@@ -452,13 +470,13 @@ Would only log the following value :
 
 ## Route-Specific Whitelists and Blacklists
 
-New in version 0.2.x is the ability to add whitelist elements in a route.  express-winston adds a `_routeWhitelists` object to the `req`uest, containing `.body`, `.req` and `.res` properties, to which you can set an array of 'whitelist' parameters to include in the log, specific to the route in question:
+New in version 0.2.x is the ability to add whitelist elements in a route. express-winston adds a `_routeWhitelists` object to the `req`uest, containing `.body`, `.req` and `.res` properties, to which you can set an array of 'whitelist' parameters to include in the log, specific to the route in question:
 
-``` js
-    router.post('/user/register', function(req, res, next) {
-      req._routeWhitelists.body = ['username', 'email', 'age']; // But not 'password' or 'confirm-password' or 'top-secret'
-      req._routeWhitelists.res = ['_headers'];
-    });
+```js
+router.post("/user/register", function (req, res, next) {
+	req._routeWhitelists.body = ["username", "email", "age"]; // But not 'password' or 'confirm-password' or 'top-secret'
+	req._routeWhitelists.res = ["_headers"];
+});
 ```
 
 Post to `/user/register` would give you something like the following:
@@ -496,22 +514,26 @@ Post to `/user/register` would give you something like the following:
 
 Blacklisting supports only the `body` property.
 
-
-``` js
-    router.post('/user/register', function(req, res, next) {
-      req._routeWhitelists.body = ['username', 'email', 'age']; // But not 'password' or 'confirm-password' or 'top-secret'
-      req._routeBlacklists.body = ['username', 'password', 'confirm-password', 'top-secret'];
-      req._routeWhitelists.res = ['_headers'];
-    });
+```js
+router.post("/user/register", function (req, res, next) {
+	req._routeWhitelists.body = ["username", "email", "age"]; // But not 'password' or 'confirm-password' or 'top-secret'
+	req._routeBlacklists.body = [
+		"username",
+		"password",
+		"confirm-password",
+		"top-secret",
+	];
+	req._routeWhitelists.res = ["_headers"];
+});
 ```
 
 If both `req._routeWhitelists.body` and `req._routeBlacklists.body` are set the result will be the white listed properties
 excluding any black listed ones. In the above example, only 'email' and 'age' would be included.
 
-
 ## Custom Status Levels
 
 If you set `statusLevels` to `true` express-winston will log sub 400 responses at info level, sub 500 responses as warnings and 500+ responses as errors. To change these levels specify an object as follows
+
 ```json
   "statusLevels": {
     "success": "debug",
@@ -538,7 +560,6 @@ If you set `statusLevels` to `false` and assign a function to level, you can cus
     return level;
   }
 ```
-
 
 ## Dynamic meta data from request or response
 
@@ -574,12 +595,12 @@ If you ran into any problems, please use the project [Issues section](https://gi
 
 ## Contributors
 
-* [Johan Hernandez](https://github.com/bithavoc) (https://github.com/bithavoc)
-* [Lars Jacob](https://github.com/jaclar) (https://github.com/jaclar)
-* [Jonathan Lomas](https://github.com/floatingLomas) (https://github.com/floatingLomas)
-* [Ross Brandes](https://github.com/rosston) (https://github.com/rosston)
-* [Alex Kaplan](https://github.com/kapalex) (https://github.com/kapalex)
-* [Matt Morrissette](https://github.com/yinzara) (https://github.com/yinzara) 
+- [Johan Hernandez](https://github.com/bithavoc) (https://github.com/bithavoc)
+- [Lars Jacob](https://github.com/jaclar) (https://github.com/jaclar)
+- [Jonathan Lomas](https://github.com/floatingLomas) (https://github.com/floatingLomas)
+- [Ross Brandes](https://github.com/rosston) (https://github.com/rosston)
+- [Alex Kaplan](https://github.com/kapalex) (https://github.com/kapalex)
+- [Matt Morrissette](https://github.com/yinzara) (https://github.com/yinzara)
 
 Also see AUTHORS file, add yourself if you are missing.
 
