@@ -19,22 +19,22 @@ To make use of express-winston, you need to add the following to your applicatio
 
 In `package.json`:
 
-```
+```json
 {
-  "dependencies": {
-    "...": "...",
-    "winston": "^3.0.0",
-    "express-winston": "^4.0.4",
-    "...": "..."
-  }
+	"dependencies": {
+		"...": "...",
+		"express": "^5.2.1",
+		"winston": "^3.19.0",
+		"...": "..."
+	}
 }
 ```
 
 In `server.js` (or wherever you need it):
 
-```
-var winston = require('winston'),
-    expressWinston = require('express-winston');
+```js
+import winston from "winston";
+import expressWinston from "@lesjoursfr/express-winston";
 ```
 
 ### Request Logging
@@ -42,7 +42,7 @@ var winston = require('winston'),
 Use `expressWinston.logger(options)` to create a middleware to log your HTTP requests.
 
 ```js
-var router = require("./my-express-router");
+import router from "./my-express-router";
 
 app.use(
 	expressWinston.logger({
@@ -98,7 +98,7 @@ app.use(router); // notice how the router goes after the logger.
 Use `expressWinston.errorLogger(options)` to create a middleware that log the errors of the pipeline.
 
 ```js
-var router = require("./my-express-router");
+import router from "./my-express-router";
 
 app.use(router); // notice how the router goes first.
 app.use(
@@ -155,21 +155,20 @@ Explicitly setting the `metaField` to `null` or "null" causes the metadata to be
 
 The `metaField` option now also supports dot separated and array values to store the metadata at a nested location in the log entry.
 
-<h3>Upgrade Note: For those upgrading from a version of `express-winston` prior to 4.0.0 that use the `metaField` property, to keep the same behavior, prepend `meta.` to your current `metaField` configuration. (i.e. 'foo' would become 'meta.foo')</h3>
-
 ## Examples
 
 ```js
-var express = require("express");
-var expressWinston = require("express-winston");
-var winston = require("winston"); // for transports.Console
-var app = (module.exports = express());
+import express from "express";
+import expressWinston from "express-winston";
+import winston from "winston"; // for transports.Console
+
+const app = express();
 
 app.use(express.bodyParser());
 app.use(express.methodOverride());
 
 // Let's make our express `Router` first.
-var router = express.Router();
+const router = express.Router();
 router.get("/error", function (req, res, next) {
 	// here we cause an error in the pipeline so we see express-winston in action.
 	return next(
@@ -228,34 +227,37 @@ app.listen(3000, function () {
 
 Browse `/` to see a regular HTTP logging like this:
 
-    {
-      "req": {
-        "httpVersion": "1.1",
-        "headers": {
-          "host": "localhost:3000",
-          "connection": "keep-alive",
-          "accept": "*/*",
-          "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_4) AppleWebKit/536.11 (KHTML, like Gecko) Chrome/20.0.1132.57 Safari/536.11",
-          "accept-encoding": "gzip,deflate,sdch",
-          "accept-language": "en-US,en;q=0.8,es-419;q=0.6,es;q=0.4",
-          "accept-charset": "ISO-8859-1,utf-8;q=0.7,*;q=0.3",
-          "cookie": "connect.sid=nGspCCSzH1qxwNTWYAoexI23.seE%2B6Whmcwd"
-        },
-        "url": "/",
-        "method": "GET",
-        "originalUrl": "/",
-        "query": {}
-      },
-      "res": {
-        "statusCode": 200
-      },
-      "responseTime" : 12,
-      "level": "info",
-      "message": "HTTP GET /favicon.ico"
-    }
+```json
+{
+	"req": {
+		"httpVersion": "1.1",
+		"headers": {
+			"host": "localhost:3000",
+			"connection": "keep-alive",
+			"accept": "*/*",
+			"user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_4) AppleWebKit/536.11 (KHTML, like Gecko) Chrome/20.0.1132.57 Safari/536.11",
+			"accept-encoding": "gzip,deflate,sdch",
+			"accept-language": "en-US,en;q=0.8,es-419;q=0.6,es;q=0.4",
+			"accept-charset": "ISO-8859-1,utf-8;q=0.7,*;q=0.3",
+			"cookie": "connect.sid=nGspCCSzH1qxwNTWYAoexI23.seE%2B6Whmcwd"
+		},
+		"url": "/",
+		"method": "GET",
+		"originalUrl": "/",
+		"query": {}
+	},
+	"res": {
+		"statusCode": 200
+	},
+	"responseTime": 12,
+	"level": "info",
+	"message": "HTTP GET /favicon.ico"
+}
+```
 
 Browse `/error` will show you how express-winston handles and logs the errors in the express pipeline like this:
 
+```json
     {
       "date": "Thu Jul 19 2012 23:39:44 GMT-0500 (COT)",
       "process": {
@@ -328,6 +330,7 @@ Browse `/error` will show you how express-winston handles and logs the errors in
       "level": "error",
       "message": "middlewareError"
     }
+```
 
 ### StackDriver/Google Cloud Logging
 
@@ -336,9 +339,9 @@ If using this library with `@google-cloud/logging-winston`, use the following co
 See https://cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry
 
 ```javascript
-var express = require("express");
-var expressWinston = require("express-winston");
-var LoggingWinston = require("@google-cloud/logging-winston").LoggingWinston;
+import express from "express";
+import expressWinston from "express-winston";
+import { LoggingWinston } from "@google-cloud/logging-winston";
 
 const app = express();
 
@@ -406,19 +409,25 @@ Only those properties of the request object will be logged. Set or modify the al
 
 For example, to include the session property (the session data), add the following during logger setup:
 
-    expressWinston.requestAllowlist.push('session');
+```js
+expressWinston.requestAllowlist.push("session");
+```
 
 The denylisting excludes certain properties and keeps all others. If both `bodyAllowlist` and `bodyDenylist` are set
 the properties excluded by the denylist are not included even if they are listed in the allowlist!
 
 Example:
 
-    expressWinston.bodyDenylist.push('secretid', 'secretproperty');
+```js
+expressWinston.bodyDenylist.push("secretid", "secretproperty");
+```
 
 Note that you can log the whole request and/or response body:
 
-    expressWinston.requestAllowlist.push('body');
-    expressWinston.responseAllowlist.push('body');
+```js
+expressWinston.requestAllowlist.push("body");
+expressWinston.responseAllowlist.push("body");
+```
 
 ### Nested Allowlists
 
@@ -426,37 +435,43 @@ Note that you can log the whole request and/or response body:
 
 For example, using the following during logger setup:
 
-    expressWinston.responseAllowlist.push('body.important.value');
+```js
+expressWinston.responseAllowlist.push("body.important.value");
+```
 
 A response that looks like this :
 
-    {
-        body: {
-            important: {
-                value: 5
-            },
-            notImportant: {
-                value: 7
-            }
-        },
-        other: {
-            value: 3
-        }
-    }
+```json
+{
+	"body": {
+		"important": {
+			"value": 5
+		},
+		"notImportant": {
+			"value": 7
+		}
+	},
+	"other": {
+		"value": 3
+	}
+}
+```
 
 Would only log the following value :
 
-    {
-        body: {
-            important: {
-                value: 5
-            }
-        }
-    }
+```json
+{
+	"body": {
+		"important": {
+			"value": 5
+		}
+	}
+}
+```
 
 ## Route-Specific Allowlists and Denylists
 
-New in version 0.2.x is the ability to add allowlist elements in a route. express-winston adds a `_routeAllowlists` object to the `req`uest, containing `.body`, `.req` and `.res` properties, to which you can set an array of 'allowlist' parameters to include in the log, specific to the route in question:
+express-winston adds a `_routeAllowlists` object to the request, containing `.body`, `.req` and `.res` properties, to which you can set an array of 'allowlist' parameters to include in the log, specific to the route in question:
 
 ```js
 router.post("/user/register", function (req, res, next) {
@@ -467,36 +482,38 @@ router.post("/user/register", function (req, res, next) {
 
 Post to `/user/register` would give you something like the following:
 
-    {
-      "req": {
-        "httpVersion": "1.1",
-        "headers": {
-          "host": "localhost:3000",
-          "connection": "keep-alive",
-          "accept": "*/*",
-          "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_4) AppleWebKit/536.11 (KHTML, like Gecko) Chrome/20.0.1132.57 Safari/536.11",
-          "accept-encoding": "gzip,deflate,sdch",
-          "accept-language": "en-US,en;q=0.8,es-419;q=0.6,es;q=0.4",
-          "accept-charset": "ISO-8859-1,utf-8;q=0.7,*;q=0.3",
-          "cookie": "connect.sid=nGspCCSzH1qxwNTWYAoexI23.seE%2B6Whmcwd"
-        },
-        "url": "/",
-        "method": "GET",
-        "originalUrl": "/",
-        "query": {},
-        "body": {
-          "username": "foo",
-          "email": "foo@bar.com",
-          "age": "72"
-        }
-      },
-      "res": {
-        "statusCode": 200
-      },
-      "responseTime" : 12,
-      "level": "info",
-      "message": "HTTP GET /favicon.ico"
-    }
+```json
+{
+	"req": {
+		"httpVersion": "1.1",
+		"headers": {
+			"host": "localhost:3000",
+			"connection": "keep-alive",
+			"accept": "*/*",
+			"user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_4) AppleWebKit/536.11 (KHTML, like Gecko) Chrome/20.0.1132.57 Safari/536.11",
+			"accept-encoding": "gzip,deflate,sdch",
+			"accept-language": "en-US,en;q=0.8,es-419;q=0.6,es;q=0.4",
+			"accept-charset": "ISO-8859-1,utf-8;q=0.7,*;q=0.3",
+			"cookie": "connect.sid=nGspCCSzH1qxwNTWYAoexI23.seE%2B6Whmcwd"
+		},
+		"url": "/",
+		"method": "GET",
+		"originalUrl": "/",
+		"query": {},
+		"body": {
+			"username": "foo",
+			"email": "foo@bar.com",
+			"age": "72"
+		}
+	},
+	"res": {
+		"statusCode": 200
+	},
+	"responseTime": 12,
+	"level": "info",
+	"message": "HTTP GET /favicon.ico"
+}
+```
 
 Denylisting supports only the `body` property.
 
@@ -520,12 +537,14 @@ excluding any black listed ones. In the above example, only 'email' and 'age' wo
 
 If you set `statusLevels` to `true` express-winston will log sub 400 responses at info level, sub 500 responses as warnings and 500+ responses as errors. To change these levels specify an object as follows
 
-```json
-  "statusLevels": {
-    "success": "debug",
-    "warn": "debug",
-    "error": "info"
-  }
+```js
+{
+	statusLevels: {
+		success: "debug",
+		warn: "debug",
+		error: "info"
+	}
+}
 ```
 
 ## Dynamic Status Levels
@@ -533,18 +552,20 @@ If you set `statusLevels` to `true` express-winston will log sub 400 responses a
 If you set `statusLevels` to `false` and assign a function to level, you can customize the log level for any scenario.
 
 ```js
-  statusLevels: false // default value
-  level: function (req, res) {
-    var level = "";
-    if (res.statusCode >= 100) { level = "info"; }
-    if (res.statusCode >= 400) { level = "warn"; }
-    if (res.statusCode >= 500) { level = "error"; }
-    // Ops is worried about hacking attempts so make Unauthorized and Forbidden critical
-    if (res.statusCode == 401 || res.statusCode == 403) { level = "critical"; }
-    // No one should be using the old path, so always warn for those
-    if (req.path === "/v1" && level === "info") { level = "warn"; }
-    return level;
-  }
+{
+	statusLevels: false // default value
+	level: function (req, res) {
+		var level = "";
+		if (res.statusCode >= 100) { level = "info"; }
+		if (res.statusCode >= 400) { level = "warn"; }
+		if (res.statusCode >= 500) { level = "error"; }
+		// Ops is worried about hacking attempts so make Unauthorized and Forbidden critical
+		if (res.statusCode == 401 || res.statusCode == 403) { level = "critical"; }
+		// No one should be using the old path, so always warn for those
+		if (req.path === "/v1" && level === "info") { level = "warn"; }
+		return level;
+	}
+}
 ```
 
 ## Dynamic meta data from request or response
@@ -555,13 +576,15 @@ or to extract runtime data like the user making the request. The example below l
 by the passport authentication middleware.
 
 ```js
-   meta: true,
-   dynamicMeta: function(req, res) {
-     return {
-       user: req.user ? req.user.username : null,
-       role: req.user ? req.user.role : null,
-       ...
-   }
+{
+	meta: true,
+	dynamicMeta: function(req, res) {
+		return {
+			user: req.user ? req.user.username : null,
+			role: req.user ? req.user.role : null,
+			...
+		};
+	}
 }
 ```
 
@@ -569,45 +592,8 @@ by the passport authentication middleware.
 
 Run the basic Mocha tests:
 
-    npm test
-
-View the coverage report:
-
-    npx http-server coverage/lcov-report
+    npm run test
 
 ## Issues and Collaboration
 
-If you ran into any problems, please use the project [Issues section](https://github.com/bithavoc/express-winston/issues) to search or post any bug.
-
-## Contributors
-
-- [Johan Hernandez](https://github.com/bithavoc) (https://github.com/bithavoc)
-- [Lars Jacob](https://github.com/jaclar) (https://github.com/jaclar)
-- [Jonathan Lomas](https://github.com/floatingLomas) (https://github.com/floatingLomas)
-- [Ross Brandes](https://github.com/rosston) (https://github.com/rosston)
-- [Alex Kaplan](https://github.com/kapalex) (https://github.com/kapalex)
-- [Matt Morrissette](https://github.com/yinzara) (https://github.com/yinzara)
-
-Also see AUTHORS file, add yourself if you are missing.
-
-## MIT License
-
-Copyright (c) 2012 Bithavoc.io and Contributors - http://bithavoc.io
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
+If you ran into any problems, please use the project [Issues section](https://github.com/lesjoursfr/express-winston/issues) to search or post any bug.
