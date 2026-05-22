@@ -135,11 +135,13 @@ function filterObject<T = Request | Response>(
     if (typeof value !== "undefined") {
       _.set(obj, propName, value);
       fieldsSet = true;
+
+      // Special handling for headers
       if (propName === "headers") {
         ([] as Array<string>).concat(headerDenylist).forEach(function (headerName) {
           const lowerCaseHeaderName = headerName.toLowerCase();
-          if (Object.prototype.hasOwnProperty.call(obj[propName], lowerCaseHeaderName)) {
-            delete obj[propName][lowerCaseHeaderName];
+          if (Object.prototype.hasOwnProperty.call(obj["headers"], lowerCaseHeaderName)) {
+            delete obj["headers"][lowerCaseHeaderName];
           }
         });
       }
