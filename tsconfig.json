@@ -3,12 +3,14 @@
 	"compilerOptions": {
 		/* Visit https://aka.ms/tsconfig.json to read more about this file */
 		"outDir": "lib",
-		"rootDir": "src",
-		"types": ["node"],
+		"rootDir": ".",
+		"types": ["node", "mocha"],
 		"declaration": true,
-		"declarationDir": "lib",
-		"resolveJsonModule": true
+		"declarationDir": "lib"
 	},
-	"include": ["src/**/*"],
-	"exclude": ["node_modules", "**/*.spec.ts"]
+	"include": ["src/**/*", "tests/**/*"],
+	"exclude": ["node_modules"],
+	"ts-node": {
+		"files": true
+	}
 }

@@ -3,6 +3,7 @@
 .yarn
 node_modules
 src
+tests
 .editorconfig
 .eslintignore
 eslint.config.js
@@ -13,5 +14,6 @@ eslint.config.js
 prettier.config.js
 .whitesource
 .yarnrc.yml
+tsconfig.build.json
 tsconfig.json
 yarn.lock
