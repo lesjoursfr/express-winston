@@ -23,27 +23,27 @@ export type MessageTemplate = string | ((req: Request, res: Response) => string)
  * TODO: Include 'body' and get the defaultRequestFilter to filter the inner properties like 'password' or 'password_confirmation', etc. Pull requests anyone?
  * @type {Array}
  */
-export const requestWhitelist: Array<string> = ["url", "headers", "method", "httpVersion", "originalUrl", "query"];
+export const requestAllowlist: Array<string> = ["url", "headers", "method", "httpVersion", "originalUrl", "query"];
 
 /**
  * A default list of properties in the request body that are allowed to be logged.
  * This will normally be empty here, since it should be done at the route level.
  * @type {Array}
  */
-export const bodyWhitelist: Array<string> = [];
+export const bodyAllowlist: Array<string> = [];
 
 /**
  * A default list of properties in the request body that are not allowed to be logged.
  * @type {Array}
  */
-export const bodyBlacklist: Array<string> = [];
+export const bodyDenylist: Array<string> = [];
 
 /**
  * A default list of properties in the response object that are allowed to be logged.
  * These properties will be safely included in the meta of the log.
  * @type {Array}
  */
-export const responseWhitelist: Array<string> = ["statusCode"];
+export const responseAllowlist: Array<string> = ["statusCode"];
 
 /**
  * A list of request routes that will be skipped instead of being logged. This would be useful if routes for health checks or pings would otherwise pollute
@@ -66,7 +66,7 @@ export const defaultRequestFilter: RequestFilter = function (req: Request, propN
  * A default list of headers in the request object that are not allowed to be logged.
  * @type {Array}
  */
-export const defaultHeaderBlacklist: Array<string> = [];
+export const defaultHeaderDenylist: Array<string> = [];
 
 /**
  * A default function to filter the properties of the res object.
@@ -112,16 +112,16 @@ export interface ErrorLoggerOptions {
   responseField: string | null;
   msg: MessageTemplate;
   requestFilter: RequestFilter;
-  requestWhitelist: string[];
-  headerBlacklist: string[];
-  blacklistedMetaFields: string[];
+  requestAllowlist: string[];
+  headerDenylist: string[];
+  denylistedMetaFields: string[];
   skip: ErrorRouteFilter;
 }
 
 function filterObject<T = Request | Response>(
   originalObj: T,
-  whiteList: string[],
-  headerBlacklist: string[],
+  allowlist: string[],
+  headerDenylist: string[],
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   initialFilter: (reqOrRes: T, propName: string) => any
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -130,13 +130,13 @@ function filterObject<T = Request | Response>(
   const obj: { [key: string]: any } = {};
   let fieldsSet = false;
 
-  ([] as Array<string>).concat(whiteList).forEach(function (propName) {
+  ([] as Array<string>).concat(allowlist).forEach(function (propName) {
     const value = initialFilter(originalObj, propName);
     if (typeof value !== "undefined") {
       _.set(obj, propName, value);
       fieldsSet = true;
       if (propName === "headers") {
-        ([] as Array<string>).concat(headerBlacklist).forEach(function (headerName) {
+        ([] as Array<string>).concat(headerDenylist).forEach(function (headerName) {
           const lowerCaseHeaderName = headerName.toLowerCase();
           if (Object.prototype.hasOwnProperty.call(obj[propName], lowerCaseHeaderName)) {
             delete obj[propName][lowerCaseHeaderName];
@@ -187,9 +187,9 @@ function getTemplate(
 function errorLoggerOptionsWithDefaults(options: Partial<ErrorLoggerOptions>): ErrorLoggerOptions {
   let config = { ...options };
 
-  config.requestWhitelist = config.requestWhitelist || requestWhitelist;
+  config.requestAllowlist = config.requestAllowlist || requestAllowlist;
   config.requestFilter = config.requestFilter || defaultRequestFilter;
-  config.headerBlacklist = config.headerBlacklist || defaultHeaderBlacklist;
+  config.headerDenylist = config.headerDenylist || defaultHeaderDenylist;
   config.winstonInstance =
     config.winstonInstance ||
     winston.createLogger({
@@ -207,7 +207,7 @@ function errorLoggerOptionsWithDefaults(options: Partial<ErrorLoggerOptions>): E
     };
   const exceptionHandler = new winston.ExceptionHandler(config.winstonInstance);
   config.exceptionToMeta = config.exceptionToMeta || exceptionHandler.getAllInfo.bind(exceptionHandler);
-  config.blacklistedMetaFields = config.blacklistedMetaFields || [];
+  config.denylistedMetaFields = config.denylistedMetaFields || [];
   config.skip = config.skip || defaultSkip;
   config.requestField =
     config.requestField === null || config.requestField === "null" ? null : config.requestField || requestField;
@@ -236,13 +236,13 @@ export function errorLogger(options: Partial<ErrorLoggerOptions>): ErrorRequestH
   return function (err, req, res, next) {
     // Let winston gather all the error data
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let exceptionMeta: { [key: string]: any } = _.omit(config.exceptionToMeta(err), config.blacklistedMetaFields);
+    let exceptionMeta: { [key: string]: any } = _.omit(config.exceptionToMeta(err), config.denylistedMetaFields);
     if (config.meta !== false) {
       if (config.requestField !== null) {
         exceptionMeta[config.requestField] = filterObject(
           req,
-          config.requestWhitelist,
-          config.headerBlacklist,
+          config.requestAllowlist,
+          config.headerDenylist,
           config.requestFilter
         );
       }
@@ -298,8 +298,8 @@ export interface LoggerOptions {
   transports: Transport[];
   winstonInstance: winston.Logger;
   baseMeta: object;
-  bodyBlacklist: string[];
-  bodyWhitelist: string[];
+  bodyDenylist: string[];
+  bodyAllowlist: string[];
   colorize: boolean;
   dynamicMeta: DynamicMetaFunction;
   expressFormat: boolean;
@@ -313,13 +313,13 @@ export interface LoggerOptions {
   responseField: string | null;
   msg: MessageTemplate;
   requestFilter: RequestFilter;
-  requestWhitelist: string[];
+  requestAllowlist: string[];
   responseFilter: ResponseFilter;
-  responseWhitelist: string[];
-  headerBlacklist: string[];
+  responseAllowlist: string[];
+  headerDenylist: string[];
   skip: RouteFilter;
   statusLevels: boolean | StatusLevels;
-  allowFilterOutWhitelistedRequestBody: boolean;
+  allowFilterOutAllowlistedRequestBody: boolean;
 }
 
 function levelFromStatus(statusLevels: StatusLevels): DynamicLevelFunction {
@@ -341,11 +341,11 @@ function levelFromStatus(statusLevels: StatusLevels): DynamicLevelFunction {
 function loggerOptionsWithDefaults(options: Partial<LoggerOptions>): LoggerOptions {
   const config = { ...options };
 
-  config.requestWhitelist = config.requestWhitelist || requestWhitelist;
-  config.bodyWhitelist = config.bodyWhitelist || bodyWhitelist;
-  config.bodyBlacklist = config.bodyBlacklist || bodyBlacklist;
-  config.headerBlacklist = config.headerBlacklist || defaultHeaderBlacklist;
-  config.responseWhitelist = config.responseWhitelist || responseWhitelist;
+  config.requestAllowlist = config.requestAllowlist || requestAllowlist;
+  config.bodyAllowlist = config.bodyAllowlist || bodyAllowlist;
+  config.bodyDenylist = config.bodyDenylist || bodyDenylist;
+  config.headerDenylist = config.headerDenylist || defaultHeaderDenylist;
+  config.responseAllowlist = config.responseAllowlist || responseAllowlist;
   config.requestFilter = config.requestFilter || defaultRequestFilter;
   config.responseFilter = config.responseFilter || defaultResponseFilter;
   config.ignoredRoutes = config.ignoredRoutes || ignoredRoutes;
@@ -379,7 +379,7 @@ function loggerOptionsWithDefaults(options: Partial<LoggerOptions>): LoggerOptio
     config.requestField === null || config.requestField === "null" ? null : config.requestField || requestField;
   config.responseField =
     config.responseField === null || config.responseField === "null" ? null : config.responseField || responseField;
-  config.allowFilterOutWhitelistedRequestBody = !!config.allowFilterOutWhitelistedRequestBody || false;
+  config.allowFilterOutAllowlistedRequestBody = !!config.allowFilterOutAllowlistedRequestBody || false;
 
   return config as LoggerOptions;
 }
@@ -404,8 +404,8 @@ export function logger(options: Partial<LoggerOptions>): Handler {
   return function (
     req: Request & {
       _startTime: number;
-      _routeWhitelists: { req: string[]; res: string[]; body: string[] };
-      _routeBlacklists: { body: string[] };
+      _routeAllowlists: { req: string[]; res: string[]; body: string[] };
+      _routeDenylists: { body: string[] };
     },
     res: Response & { responseTime: number; body: string },
     next: NextFunction
@@ -418,13 +418,13 @@ export function logger(options: Partial<LoggerOptions>): Handler {
 
     req._startTime = Date.now();
 
-    req._routeWhitelists = {
+    req._routeAllowlists = {
       req: [],
       res: [],
       body: [],
     };
 
-    req._routeBlacklists = {
+    req._routeDenylists = {
       body: [],
     };
 
@@ -449,35 +449,26 @@ export function logger(options: Partial<LoggerOptions>): Handler {
         let filteredRequest: { [key: string]: any } | undefined;
 
         if (config.requestField !== null) {
-          const requestWhitelist = config.requestWhitelist.concat(req._routeWhitelists.req || []);
-          filteredRequest = filterObject(req, requestWhitelist, config.headerBlacklist, config.requestFilter);
+          const requestAllowlist = config.requestAllowlist.concat(req._routeAllowlists.req || []);
+          filteredRequest = filterObject(req, requestAllowlist, config.headerDenylist, config.requestFilter);
 
-          const bodyWhitelist = _.union(config.bodyWhitelist, req._routeWhitelists.body || []);
-          const blacklist = _.union(config.bodyBlacklist, req._routeBlacklists.body || []);
+          const bodyAllowlist = _.union(config.bodyAllowlist, req._routeAllowlists.body || []);
+          const denylist = _.union(config.bodyDenylist, req._routeDenylists.body || []);
 
           let filteredBody = null;
 
           if (req.body !== undefined) {
-            if (blacklist.length > 0 && bodyWhitelist.length === 0) {
-              const whitelist = _.difference(Object.keys(req.body), blacklist);
-              filteredBody = filterObject(req.body, whitelist, config.headerBlacklist, config.requestFilter);
-            } else if (
-              requestWhitelist.indexOf("body") !== -1 &&
-              bodyWhitelist.length === 0 &&
-              blacklist.length === 0
-            ) {
-              filteredBody = filterObject(
-                req.body,
-                Object.keys(req.body),
-                config.headerBlacklist,
-                config.requestFilter
-              );
+            if (denylist.length > 0 && bodyAllowlist.length === 0) {
+              const allowlist = _.difference(Object.keys(req.body), denylist);
+              filteredBody = filterObject(req.body, allowlist, config.headerDenylist, config.requestFilter);
+            } else if (requestAllowlist.indexOf("body") !== -1 && bodyAllowlist.length === 0 && denylist.length === 0) {
+              filteredBody = filterObject(req.body, Object.keys(req.body), config.headerDenylist, config.requestFilter);
             } else {
-              filteredBody = filterObject(req.body, bodyWhitelist, config.headerBlacklist, config.requestFilter);
+              filteredBody = filterObject(req.body, bodyAllowlist, config.headerDenylist, config.requestFilter);
             }
           }
 
-          if (filteredRequest && (!config.allowFilterOutWhitelistedRequestBody || filteredRequest.body !== undefined)) {
+          if (filteredRequest && (!config.allowFilterOutAllowlistedRequestBody || filteredRequest.body !== undefined)) {
             if (filteredBody) {
               filteredRequest.body = filteredBody;
             } else {
@@ -488,8 +479,8 @@ export function logger(options: Partial<LoggerOptions>): Handler {
           logData[config.requestField] = filteredRequest;
         }
 
-        const responseWhitelist = config.responseWhitelist.concat(req._routeWhitelists.res || []);
-        if (_.includes(responseWhitelist, "body")) {
+        const responseAllowlist = config.responseAllowlist.concat(req._routeAllowlists.res || []);
+        if (_.includes(responseAllowlist, "body")) {
           if (chunk) {
             const contentType = res.getHeader("content-type");
             const isJson = typeof contentType === "string" && contentType.indexOf("json") >= 0 ? true : false;
@@ -499,7 +490,7 @@ export function logger(options: Partial<LoggerOptions>): Handler {
         }
 
         if (config.responseField !== null) {
-          const filteredResponse = filterObject(res, responseWhitelist, config.headerBlacklist, config.responseFilter);
+          const filteredResponse = filterObject(res, responseAllowlist, config.headerDenylist, config.responseFilter);
           if (filteredResponse) {
             if (config.requestField === config.responseField) {
               logData[config.requestField] = _.assign(filteredRequest, filteredResponse);
@@ -509,7 +500,7 @@ export function logger(options: Partial<LoggerOptions>): Handler {
           }
         }
 
-        if (!responseWhitelist.includes("responseTime")) {
+        if (!responseAllowlist.includes("responseTime")) {
           logData.responseTime = res.responseTime;
         }
 
