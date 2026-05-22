@@ -1,6 +1,8 @@
 import chalk from "chalk";
+import { Request, Response } from "express";
 import { describe, it } from "mocha";
 import assert from "node:assert/strict";
+import winston from "winston";
 import { defaultSkip, errorLogger, logger } from "../src/index.js";
 
 type LogEntry = {
@@ -8,12 +10,12 @@ type LogEntry = {
   message?: string;
 };
 
-function createFakeLogger(loggedEntries: LogEntry[]) {
+function createFakeLogger(loggedEntries: LogEntry[]): winston.Logger {
   return {
     log(entry: LogEntry) {
       loggedEntries.push(entry);
     },
-  };
+  } as unknown as winston.Logger;
 }
 
 describe("express-winston", () => {
@@ -26,8 +28,7 @@ describe("express-winston", () => {
     const winstonInstance = createFakeLogger(loggedEntries);
 
     const middleware = logger({
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      winstonInstance: winstonInstance as any,
+      winstonInstance: winstonInstance,
       msg: "HTTP {{req.method}} {{req.url}} {{res.statusCode}}",
     });
 
@@ -38,7 +39,7 @@ describe("express-winston", () => {
       headers: {},
       httpVersion: "1.1",
       query: {},
-    };
+    } as unknown as Request;
 
     const res = {
       statusCode: 201,
@@ -48,19 +49,17 @@ describe("express-winston", () => {
       getHeader() {
         return "text/plain";
       },
-    };
+    } as unknown as Response;
 
     let nextCalled = false;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    middleware(req as any, res as any, () => {
+    middleware(req, res, () => {
       nextCalled = true;
     });
 
     assert.equal(nextCalled, true);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (res as any).end("created");
+    res.end("created");
 
     assert.equal(loggedEntries.length, 1);
     assert.equal(loggedEntries[0].message, "HTTP GET /users 201");
@@ -71,8 +70,7 @@ describe("express-winston", () => {
     const winstonInstance = createFakeLogger(loggedEntries);
 
     const middleware = errorLogger({
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      winstonInstance: winstonInstance as any,
+      winstonInstance: winstonInstance,
       msg: "Error {{err.message}} on {{req.method}} {{req.url}}",
     });
 
@@ -83,17 +81,16 @@ describe("express-winston", () => {
       headers: {},
       httpVersion: "1.1",
       query: {},
-    };
+    } as unknown as Request;
 
     const res = {
       statusCode: 500,
-    };
+    } as unknown as Response;
 
     const err = new Error("boom");
     let forwardedError: Error | undefined;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    middleware(err, req as any, res as any, (nextErr?: any) => {
+    middleware(err, req, res, (nextErr) => {
       forwardedError = nextErr;
     });
 
@@ -107,8 +104,7 @@ describe("express-winston", () => {
     const winstonInstance = createFakeLogger(loggedEntries);
 
     const middleware = logger({
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      winstonInstance: winstonInstance as any,
+      winstonInstance: winstonInstance,
       msg: (_req, _res) => "fn {{req.method}} {{req.url}} {{res.statusCode}}",
     });
 
@@ -119,7 +115,7 @@ describe("express-winston", () => {
       headers: {},
       httpVersion: "1.1",
       query: {},
-    };
+    } as unknown as Request;
 
     const res = {
       statusCode: 202,
@@ -129,12 +125,10 @@ describe("express-winston", () => {
       getHeader() {
         return "text/plain";
       },
-    };
+    } as unknown as Response;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    middleware(req as any, res as any, () => undefined);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (res as any).end("accepted");
+    middleware(req, res, () => undefined);
+    res.end("accepted");
 
     assert.equal(loggedEntries.length, 1);
     assert.equal(loggedEntries[0].message, "fn PATCH /accounts/42 202");
@@ -145,8 +139,7 @@ describe("express-winston", () => {
     const winstonInstance = createFakeLogger(loggedEntries);
 
     const middleware = logger({
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      winstonInstance: winstonInstance as any,
+      winstonInstance: winstonInstance,
       msg: "HTTP {{req.method}} {{req.url}} {{res.statusCode}}",
       skip: () => true,
     });
@@ -158,7 +151,7 @@ describe("express-winston", () => {
       headers: {},
       httpVersion: "1.1",
       query: {},
-    };
+    } as unknown as Request;
 
     const res = {
       statusCode: 200,
@@ -168,12 +161,10 @@ describe("express-winston", () => {
       getHeader() {
         return "text/plain";
       },
-    };
+    } as unknown as Response;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    middleware(req as any, res as any, () => undefined);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (res as any).end("ok");
+    middleware(req, res, () => undefined);
+    res.end("ok");
 
     assert.equal(loggedEntries.length, 0);
   });
@@ -184,8 +175,7 @@ describe("express-winston", () => {
     const originalNow = Date.now;
 
     const middleware = logger({
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      winstonInstance: winstonInstance as any,
+      winstonInstance: winstonInstance,
       expressFormat: true,
     });
 
@@ -196,7 +186,7 @@ describe("express-winston", () => {
       headers: {},
       httpVersion: "1.1",
       query: {},
-    };
+    } as unknown as Request;
 
     const res = {
       statusCode: 204,
@@ -206,15 +196,13 @@ describe("express-winston", () => {
       getHeader() {
         return "text/plain";
       },
-    };
+    } as unknown as Response;
 
     try {
       Date.now = () => 1000;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      middleware(req as any, res as any, () => undefined);
+      middleware(req, res, () => undefined);
       Date.now = () => 1042;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (res as any).end();
+      res.end();
     } finally {
       Date.now = originalNow;
     }
@@ -228,8 +216,7 @@ describe("express-winston", () => {
     const winstonInstance = createFakeLogger(loggedEntries);
 
     const middleware = errorLogger({
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      winstonInstance: winstonInstance as any,
+      winstonInstance: winstonInstance,
       msg: (_req, _res) => "ERR {{req.method}} {{req.url}} {{res.statusCode}}",
     });
 
@@ -240,16 +227,15 @@ describe("express-winston", () => {
       headers: {},
       httpVersion: "1.1",
       query: {},
-    };
+    } as unknown as Request;
 
     const res = {
       statusCode: 503,
-    };
+    } as unknown as Response;
 
     const err = new Error("unavailable");
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    middleware(err, req as any, res as any, () => undefined);
+    middleware(err, req, res, () => undefined);
 
     assert.equal(loggedEntries.length, 1);
     assert.equal(loggedEntries[0].message, "ERR PUT /orders/55 503");
@@ -260,8 +246,7 @@ describe("express-winston", () => {
     const winstonInstance = createFakeLogger(loggedEntries);
 
     const middleware = errorLogger({
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      winstonInstance: winstonInstance as any,
+      winstonInstance: winstonInstance,
       msg: "Error {{err.message}} on {{req.method}} {{req.url}}",
       skip: () => true,
     });
@@ -273,16 +258,15 @@ describe("express-winston", () => {
       headers: {},
       httpVersion: "1.1",
       query: {},
-    };
+    } as unknown as Request;
 
     const res = {
       statusCode: 500,
-    };
+    } as unknown as Response;
 
     const err = new Error("boom");
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    middleware(err, req as any, res as any, () => undefined);
+    middleware(err, req, res, () => undefined);
 
     assert.equal(loggedEntries.length, 0);
   });
@@ -293,8 +277,7 @@ describe("express-winston", () => {
     const originalNow = Date.now;
 
     const middleware = logger({
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      winstonInstance: winstonInstance as any,
+      winstonInstance: winstonInstance,
       expressFormat: true,
       colorize: true,
     });
@@ -306,7 +289,7 @@ describe("express-winston", () => {
       headers: {},
       httpVersion: "1.1",
       query: {},
-    };
+    } as unknown as Request;
 
     const res = {
       statusCode: 404,
@@ -316,15 +299,13 @@ describe("express-winston", () => {
       getHeader() {
         return "text/plain";
       },
-    };
+    } as unknown as Response;
 
     try {
       Date.now = () => 2000;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      middleware(req as any, res as any, () => undefined);
+      middleware(req, res, () => undefined);
       Date.now = () => 2009;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (res as any).end("not found");
+      res.end("not found");
     } finally {
       Date.now = originalNow;
     }
@@ -340,8 +321,7 @@ describe("express-winston", () => {
     const winstonInstance = createFakeLogger(loggedEntries);
 
     const middleware = logger({
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      winstonInstance: winstonInstance as any,
+      winstonInstance: winstonInstance,
       msg: "HTTP {{req.method}} {{req.url}} {{res.statusCode}}",
       statusLevels: true,
     });
@@ -353,7 +333,7 @@ describe("express-winston", () => {
       headers: {},
       httpVersion: "1.1",
       query: {},
-    };
+    } as unknown as Request;
 
     const res = {
       statusCode: 200,
@@ -363,29 +343,20 @@ describe("express-winston", () => {
       getHeader() {
         return "text/plain";
       },
-    };
+    } as unknown as Response;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    middleware(req as any, res as any, () => undefined);
+    middleware(req, res, () => undefined);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (res as any).statusCode = 200;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (res as any).end("ok");
+    res.statusCode = 200;
+    res.end("ok");
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (res as any).statusCode = 404;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    middleware(req as any, res as any, () => undefined);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (res as any).end("warn");
+    res.statusCode = 404;
+    middleware(req, res, () => undefined);
+    res.end("warn");
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (res as any).statusCode = 500;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    middleware(req as any, res as any, () => undefined);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (res as any).end("error");
+    res.statusCode = 500;
+    middleware(req, res, () => undefined);
+    res.end("error");
 
     assert.equal(loggedEntries.length, 3);
     assert.equal(loggedEntries[0].message, "HTTP GET /level 200");
