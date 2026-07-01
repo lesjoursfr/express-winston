@@ -1,6 +1,6 @@
 {
 	"name": "@lesjoursfr/express-winston",
-	"version": "5.0.0",
+	"version": "5.0.1",
 	"description": "express.js middleware for winstonjs/winston",
 	"license": "MIT",
 	"repository": {
