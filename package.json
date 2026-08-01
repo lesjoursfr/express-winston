@@ -50,15 +50,15 @@
 		"@types/express": "5.0.6",
 		"@types/lodash": "4.17.24",
 		"@types/mocha": "10.0.10",
-		"@types/node": "24.13.2",
-		"eslint": "10.5.0",
+		"@types/node": "24.13.3",
+		"eslint": "10.8.0",
 		"eslint-config-prettier": "10.1.8",
 		"globals": "17.7.0",
 		"mocha": "11.7.6",
-		"prettier": "3.8.4",
+		"prettier": "3.9.6",
 		"ts-node": "10.9.2",
 		"typescript": "6.0.3",
-		"typescript-eslint": "8.62.0",
+		"typescript-eslint": "8.65.0",
 		"winston": "3.19.0",
 		"winston-transport": "4.9.0"
 	},
@@ -66,5 +66,5 @@
 		"express": "^5.2.1",
 		"winston": "^3.19.0"
 	},
-	"packageManager": "yarn@4.17.0"
+	"packageManager": "yarn@4.17.1"
 }
