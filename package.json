@@ -41,24 +41,24 @@
 		"test": "NODE_OPTIONS='--loader=ts-node/esm' mocha"
 	},
 	"dependencies": {
-		"chalk": "^6.0.0",
+		"chalk": "^6.0.1",
 		"lodash": "^4.18.1"
 	},
 	"devDependencies": {
 		"@eslint/js": "10.0.1",
-		"@tsconfig/node22": "22.0.5",
+		"@tsconfig/node22": "22.0.6",
 		"@types/express": "5.0.6",
-		"@types/lodash": "4.17.24",
+		"@types/lodash": "4.17.25",
 		"@types/mocha": "10.0.10",
-		"@types/node": "24.13.3",
-		"eslint": "10.8.0",
+		"@types/node": "24.19.0",
+		"eslint": "10.11.0",
 		"eslint-config-prettier": "10.1.8",
-		"globals": "17.8.0",
-		"mocha": "11.7.6",
-		"prettier": "3.9.6",
+		"globals": "17.13.0",
+		"mocha": "11.8.0",
+		"prettier": "3.9.9",
 		"ts-node": "10.9.2",
 		"typescript": "6.0.3",
-		"typescript-eslint": "8.65.0",
+		"typescript-eslint": "8.71.0",
 		"winston": "3.19.0",
 		"winston-transport": "4.9.0"
 	},
@@ -66,5 +66,5 @@
 		"express": "^5.2.1",
 		"winston": "^3.19.0"
 	},
-	"packageManager": "yarn@4.17.1"
+	"packageManager": "yarn@4.18.1"
 }
